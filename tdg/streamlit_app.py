@@ -67,29 +67,175 @@ st.set_page_config(
     layout=PAGE_LAYOUT
 )
 
-# Tab styling — scrollable with proper spacing
+# ── Global UI styling ────────────────────────────────────────────────────────
 st.markdown("""
 <style>
+/* ── Fonts ──────────────────────────────────────────────────────────────── */
+html, body, [class*="css"] {
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+}
+
+/* ── Branded header card ─────────────────────────────────────────────────── */
+.tdg-header {
+    background: linear-gradient(135deg, #0f2744 0%, #0d7377 100%);
+    border-radius: 14px;
+    padding: 28px 36px 24px;
+    margin-bottom: 28px;
+    color: white;
+    box-shadow: 0 4px 20px rgba(13,115,119,0.25);
+}
+.tdg-header h1 {
+    color: white !important;
+    margin: 0 0 6px;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+.tdg-header p {
+    color: rgba(255,255,255,0.78);
+    margin: 0;
+    font-size: 1rem;
+}
+
+/* ── Feature cards (landing page) ───────────────────────────────────────── */
+.feature-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px 18px;
+    height: 100%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: box-shadow 0.2s, transform 0.2s;
+}
+.feature-card:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,0.10);
+    transform: translateY(-2px);
+}
+.feature-icon { font-size: 2rem; margin-bottom: 10px; line-height: 1; }
+.feature-title { font-weight: 700; font-size: 0.92rem; color: #0f2744; margin-bottom: 5px; }
+.feature-desc { font-size: 0.8rem; color: #64748b; line-height: 1.5; }
+
+/* ── How-it-works steps ─────────────────────────────────────────────────── */
+.how-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+.how-step:last-child { border-bottom: none; }
+.step-num {
+    min-width: 34px; height: 34px;
+    background: linear-gradient(135deg, #0f2744, #0d7377);
+    color: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 0.85rem;
+    box-shadow: 0 2px 6px rgba(13,115,119,0.3);
+}
+.step-body { flex: 1; }
+.step-title { font-weight: 700; font-size: 0.9rem; color: #1e293b; margin-bottom: 2px; }
+.step-desc { font-size: 0.8rem; color: #64748b; }
+
+/* ── File format badges ─────────────────────────────────────────────────── */
+.fmt-badge {
+    display: inline-block;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    padding: 3px 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #1e40af;
+    margin: 3px 3px 0 0;
+    letter-spacing: 0.3px;
+}
+.fmt-badge.green { background: #f0fdf4; border-color: #bbf7d0; color: #166534; }
+.fmt-badge.purple { background: #faf5ff; border-color: #e9d5ff; color: #6b21a8; }
+.fmt-badge.orange { background: #fff7ed; border-color: #fed7aa; color: #c2410c; }
+
+/* ── LLM status pill ────────────────────────────────────────────────────── */
+.status-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 0.75rem; font-weight: 600;
+}
+.status-on  { background: #dcfce7; color: #166534; }
+.status-off { background: #fee2e2; color: #991b1b; }
+
+/* ── Tabs ───────────────────────────────────────────────────────────────── */
 div[data-baseweb="tab-list"] {
     overflow-x: auto;
     flex-wrap: nowrap !important;
     scrollbar-width: thin;
     -webkit-overflow-scrolling: touch;
-    gap: 8px;
+    gap: 4px;
+    background: #f8fafc;
+    border-radius: 10px;
+    padding: 4px 6px;
+    border: 1px solid #e2e8f0;
 }
-div[data-baseweb="tab-list"]::-webkit-scrollbar {
-    height: 6px;
-}
+div[data-baseweb="tab-list"]::-webkit-scrollbar { height: 4px; }
 div[data-baseweb="tab-list"]::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 3px;
+    background: #cbd5e1; border-radius: 2px;
 }
 div[data-baseweb="tab-list"] button[data-baseweb="tab"] {
     white-space: nowrap;
     flex-shrink: 0;
-    padding: 8px 16px;
-    font-size: 14px;
+    padding: 8px 18px;
+    font-size: 13px;
+    border-radius: 7px;
+    font-weight: 500;
+    transition: background 0.15s;
 }
+
+/* ── Sidebar ────────────────────────────────────────────────────────────── */
+section[data-testid="stSidebar"] {
+    background: #f8fafc;
+    border-right: 1px solid #e2e8f0;
+}
+section[data-testid="stSidebar"] .block-container { padding-top: 1.5rem; }
+
+/* ── Metric containers ──────────────────────────────────────────────────── */
+[data-testid="metric-container"] {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 16px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+/* ── File uploader drop zone ────────────────────────────────────────────── */
+[data-testid="stFileUploader"] {
+    border: 2px dashed #93c5fd;
+    border-radius: 12px;
+    background: #eff6ff;
+    padding: 6px;
+    transition: border-color 0.2s, background 0.2s;
+}
+[data-testid="stFileUploader"]:hover {
+    border-color: #0d7377;
+    background: #ecfdf5;
+}
+
+/* ── Primary button ─────────────────────────────────────────────────────── */
+.stButton > button[kind="primary"] {
+    background: linear-gradient(135deg, #0f2744 0%, #0d7377 100%) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    color: white !important;
+    font-weight: 600 !important;
+    padding: 10px 28px !important;
+    box-shadow: 0 3px 12px rgba(13,115,119,0.3) !important;
+    transition: transform 0.15s, box-shadow 0.15s !important;
+}
+.stButton > button[kind="primary"]:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 5px 18px rgba(13,115,119,0.4) !important;
+}
+
+/* ── Success / info / warning tweak ────────────────────────────────────── */
+[data-testid="stNotification"] { border-radius: 10px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -104,6 +250,14 @@ def main():
     with st.sidebar:
         st.markdown(f"**{APP_TITLE}**")
         st.caption(f"v{APP_VERSION}")
+
+        # LLM availability indicator
+        if LLM_PLATFORM_AVAILABLE:
+            st.markdown('<span class="status-pill status-on">● AI Connected</span>',
+                        unsafe_allow_html=True)
+        else:
+            st.markdown('<span class="status-pill status-off">○ AI Offline</span>',
+                        unsafe_allow_html=True)
         st.markdown("---")
 
         st.markdown("### Target Platform")
@@ -135,8 +289,12 @@ def main():
             st.checkbox("Notebook Overview", key="enable_notebook_overview", value=True,
                          help="View notebook cells as a readable document")
 
-    st.title(f"{APP_ICON} {APP_TITLE}")
-    st.caption("Upload source files to automatically generate TDD, STTM, Data Models, SQL, and more.")
+    st.markdown(f"""
+<div class="tdg-header">
+  <h1>{APP_ICON} {APP_TITLE}</h1>
+  <p>Upload source files to automatically generate TDD, STTM, Data Models, SQL, and more.</p>
+</div>
+""", unsafe_allow_html=True)
 
     # File uploader (key changes on clear to reset the widget)
     uploaded_files = st.file_uploader(
@@ -2051,28 +2209,97 @@ def render_task_dag_tab(data):
 
 
 def render_instructions():
-    """Render instructions when no files are uploaded."""
-    st.info("Upload your source files to begin — supported formats: XML (Informatica), SQL")
+    """Render landing page instructions when no files are uploaded."""
 
-    with st.expander("How to Use"):
-        st.markdown("""
-        **Step 1:** Upload one or more source files using the uploader above
-        - **Informatica XML** — mapping (m_*.XML) and workflow (wf_*.XML) files
-        - **SQL files** — CREATE VIEW, INSERT INTO SELECT, CTEs, stored procedures
+    # ── Supported formats banner ──────────────────────────────────────────
+    st.markdown("""
+<p style="margin-bottom:10px; font-size:0.85rem; color:#64748b; font-weight:600; letter-spacing:0.5px;">
+SUPPORTED FILE FORMATS
+</p>
+<div style="margin-bottom:28px;">
+  <span class="fmt-badge">📄 XML</span>
+  <span class="fmt-badge">🗄️ SQL</span>
+  <span class="fmt-badge green">📓 IPYNB</span>
+  <span class="fmt-badge purple">🐍 PY</span>
+  <span class="fmt-badge orange">📦 DBC</span>
+</div>
+""", unsafe_allow_html=True)
 
-        **Step 2:** (Optional) Enter Business Context and Additional Requirements
+    # ── Feature cards ─────────────────────────────────────────────────────
+    st.markdown("""
+<p style="margin-bottom:14px; font-size:0.85rem; color:#64748b; font-weight:600; letter-spacing:0.5px;">
+WHAT YOU CAN GENERATE
+</p>
+""", unsafe_allow_html=True)
 
-        **Step 3:** Select your LLM model for AI-powered document generation
+    cols = st.columns(4)
+    features = [
+        ("📋", "Technical Design Document", "AI-generated TDD with business context, data flows, and transformation logic."),
+        ("🔗", "Source-to-Target Mapping", "Complete STTM with 22-column lineage: sources, targets, expressions, keys."),
+        ("🗺️", "Lineage Diagrams", "Visual data flow diagrams showing how data moves from source to target."),
+        ("🔷", "Data Models", "Conceptual, Logical and Physical ERDs generated from your parsed schema."),
+        ("⚡", "SQL Generator", "Platform-native DDL, DML, MERGE, and Stored Procedures / Python Notebooks."),
+        ("📓", "Notebook Overview", "Render Databricks notebook cells as a readable, searchable document."),
+        ("📊", "Parser Output", "Raw parsed tables, fields, transformations and connector data."),
+        ("🔄", "Update STTM", "AI-assisted STTM refinement with business name enrichment."),
+    ]
 
-        **Step 4:** Click **Parse & Generate Documentation**
+    # Show in two rows of 4
+    for row_start in range(0, len(features), 4):
+        row_cols = st.columns(4)
+        for i, col in enumerate(row_cols):
+            fi = row_start + i
+            if fi < len(features):
+                icon, title, desc = features[fi]
+                with col:
+                    st.markdown(f"""
+<div class="feature-card">
+  <div class="feature-icon">{icon}</div>
+  <div class="feature-title">{title}</div>
+  <div class="feature-desc">{desc}</div>
+</div>
+""", unsafe_allow_html=True)
+        st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
 
-        **Step 5:** Explore the output tabs:
-        - **TDD** — AI-generated Technical Design Document
-        - **Enhanced STTM** — Source-to-Target field mapping
-        - **Lineage Diagram** — Visual data flow
-        - **Data Model** — Conceptual, Logical, Physical diagrams
-        - **SQL Generator** — DDL, DML, Stored Procedures / Python Notebooks
-        """)
+    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+
+    # ── How it works ──────────────────────────────────────────────────────
+    st.markdown("""
+<p style="margin-bottom:14px; font-size:0.85rem; color:#64748b; font-weight:600; letter-spacing:0.5px;">
+HOW IT WORKS
+</p>
+""", unsafe_allow_html=True)
+
+    steps = [
+        ("1", "Upload Source Files",
+         "Drop in Informatica XML mappings/workflows, SQL files, or Databricks notebooks (.ipynb, .py, .dbc)."),
+        ("2", "Configure (Optional)",
+         "Add business context to guide the AI. Select your LLM model and target SQL platform from the sidebar."),
+        ("3", "Parse & Generate",
+         "Click the button — TDG parses lineage, extracts schema, and triggers AI document generation."),
+        ("4", "Explore Output Tabs",
+         "Navigate TDD, STTM, Lineage Diagram, Data Model, SQL Generator, and Notebook Overview tabs."),
+        ("5", "Export",
+         "Download as Excel, Word, or individual SQL/Python files for your team."),
+    ]
+
+    steps_html = ""
+    for num, title, desc in steps:
+        steps_html += f"""
+<div class="how-step">
+  <div class="step-num">{num}</div>
+  <div class="step-body">
+    <div class="step-title">{title}</div>
+    <div class="step-desc">{desc}</div>
+  </div>
+</div>"""
+
+    st.markdown(f"""
+<div style="background:white; border:1px solid #e2e8f0; border-radius:14px;
+            padding:20px 24px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+{steps_html}
+</div>
+""", unsafe_allow_html=True)
 
 
 if __name__ == "__main__":
