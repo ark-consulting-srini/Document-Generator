@@ -52,6 +52,7 @@ from generators.conversion_report_generator import generate_conversion_report
 # Import UI components
 from ui.session_state import init_session_state, check_file_changes, clear_parsed_data
 from ui.tabs.tab_sql_generator import render_sql_generator_tab
+from ui.tabs.tab_notebook_overview import render_notebook_overview_tab
 
 # Import parsers via registry (registers all built-in parsers on import)
 import parsers  # noqa: F401 — triggers __init__.py registration
@@ -106,14 +107,14 @@ def main():
         st.markdown("---")
 
         st.markdown("### Target Platform")
-        _platform_options = ["postgresql", "mssql", "databricks_sql", "databricks_python"]
+        _platform_options = ["databricks_sql", "databricks_python", "postgresql", "mssql"]
         _platform_labels = {
-            "postgresql":        "PostgreSQL",
-            "mssql":             "Microsoft SQL (T-SQL)",
             "databricks_sql":    "Databricks SQL",
             "databricks_python": "Databricks Python Notebooks",
+            "postgresql":        "PostgreSQL",
+            "mssql":             "Microsoft SQL (T-SQL)",
         }
-        _current = st.session_state.get('target_platform', 'postgresql')
+        _current = st.session_state.get('target_platform', 'databricks_sql')
         _idx = _platform_options.index(_current) if _current in _platform_options else 0
         target_platform = st.radio(
             "Generate SQL for:",
@@ -130,6 +131,9 @@ def main():
         st.caption("Toggle optional output tabs.")
         st.checkbox("SQL Generator", key="enable_sql_generator", value=True,
                      help="Generate DDL/DML/Stored Procedures from lineage")
+        if st.session_state.get('has_notebook_parsed'):
+            st.checkbox("Notebook Overview", key="enable_notebook_overview", value=True,
+                         help="View notebook cells as a readable document")
 
     st.title(f"{APP_ICON} {APP_TITLE}")
     st.caption("Upload source files to automatically generate TDD, STTM, Data Models, SQL, and more.")
@@ -592,6 +596,10 @@ def parse_and_process_files(uploaded_files):
     all_targets_dict = {}
     all_mappings_dict = {}
 
+    # Notebook data (populated from DatabricksNotebookParser)
+    all_notebook_cells = []
+    all_notebook_names = []
+
     # Workflow data
     all_workflow_data = []
     all_session_data = []
@@ -633,6 +641,17 @@ def parse_and_process_files(uploaded_files):
                 status_text.text(f"Parsing {uploaded_file.name}...")
                 generic_parser = parser_class(file_content, filename=uploaded_file.name)
                 generic_parser.parse_all()
+
+                # Capture notebook cells/context if this is a notebook parser
+                if hasattr(generic_parser, 'cell_sequence') and generic_parser.cell_sequence:
+                    all_notebook_cells.extend(generic_parser.cell_sequence)
+                    all_notebook_names.extend(
+                        getattr(generic_parser, 'notebooks', []) or [generic_parser.mapping_name]
+                    )
+                    # Pre-fill business context from notebook markdown (if user hasn't typed anything)
+                    nb_ctx = getattr(generic_parser, 'notebook_context', '')
+                    if nb_ctx and not st.session_state.get('main_business_context', '').strip():
+                        st.session_state.main_business_context = nb_ctx[:3000]
 
                 def sql_progress(current, total, mname):
                     overall = (file_idx + current / max(total, 1)) / len(uploaded_files)
@@ -844,6 +863,8 @@ def parse_and_process_files(uploaded_files):
 
         # Store in session state
         has_sql_files = any(f.name.lower().endswith('.sql') for f in uploaded_files)
+        has_notebook = bool(all_notebook_cells)
+        st.session_state.has_notebook_parsed = has_notebook
         st.session_state.parsed_data = {
             'df_lineage': df_lineage,
             'df_sources': df_sources,
@@ -869,6 +890,10 @@ def parse_and_process_files(uploaded_files):
             'missing_mappings': sorted(missing_mappings) if missing_mappings else [],
             'mapping_warnings': mapping_warnings,
             'workflow_parsers': workflow_parsers,
+            # Notebook data
+            'notebook_cell_sequence': all_notebook_cells,
+            'notebook_names': all_notebook_names,
+            'has_notebook': has_notebook,
         }
 
         # Generate TDD during initial processing
@@ -1192,6 +1217,9 @@ def render_results_tabs():
             lineage_df=data['df_lineage'],
             mappings_dict=data.get('mappings_dict', {}),
         )))
+
+    if st.session_state.get('enable_notebook_overview', False) and data.get('has_notebook'):
+        tab_entries.append(("📓 Notebook Overview", lambda: render_notebook_overview_tab(data)))
 
     tab_labels = [label for label, _ in tab_entries]
     tabs = st.tabs(tab_labels)

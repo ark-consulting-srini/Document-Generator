@@ -78,7 +78,11 @@ def init_session_state():
     # Target platform (user preference — not cleared on file change)
     # Options: 'postgresql', 'mssql', 'databricks_sql', 'databricks_python'
     if 'target_platform' not in st.session_state:
-        st.session_state.target_platform = 'postgresql'
+        st.session_state.target_platform = 'databricks_sql'
+
+    # Notebook parsing flag (controls sidebar checkbox visibility)
+    if 'has_notebook_parsed' not in st.session_state:
+        st.session_state.has_notebook_parsed = False
 
     # SQL Generator
     if 'sql_generator_results' not in st.session_state:
@@ -128,6 +132,7 @@ def clear_parsed_data():
     st.session_state.lineage_changes = []
     st.session_state.lineage_update_success = False
     st.session_state.sql_generator_results = {}
+    st.session_state.has_notebook_parsed = False
     st.session_state.enhanced_sttm_df = None
     st.session_state.lineage_diagrams_md = None
     st.session_state.conversion_report_md = None
