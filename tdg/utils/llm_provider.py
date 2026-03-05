@@ -575,24 +575,24 @@ class ClaudeProvider(LLMProvider):
         try:
             import anthropic
 
-            # Read API key from secrets.toml [claude] or [anthropic] section
-            api_key = None
-            try:
-                if "claude" in st.secrets:
-                    api_key = st.secrets["claude"].get("api_key")
-                if not api_key and "anthropic" in st.secrets:
-                    api_key = st.secrets["anthropic"].get("api_key")
-            except Exception:
-                pass
+            # 1. Environment variable — used by Databricks Apps (secret scope → env var)
+            api_key = os.environ.get("ANTHROPIC_API_KEY")
 
-            # Fallback: ANTHROPIC_API_KEY environment variable
+            # 2. Local dev fallback: .streamlit/secrets.toml [claude] or [anthropic]
             if not api_key:
-                api_key = os.environ.get("ANTHROPIC_API_KEY")
+                try:
+                    if "claude" in st.secrets:
+                        api_key = st.secrets["claude"].get("api_key")
+                    if not api_key and "anthropic" in st.secrets:
+                        api_key = st.secrets["anthropic"].get("api_key")
+                except Exception:
+                    pass
 
             if not api_key:
                 self._conn_error = (
-                    "No Claude API key found. Add to .streamlit/secrets.toml:\n"
-                    "[claude]\napi_key = \"sk-ant-...\""
+                    "No Claude API key found.\n"
+                    "• Databricks Apps: store in a secret scope and set ANTHROPIC_API_KEY env var in app.yaml\n"
+                    "• Local dev: add to .streamlit/secrets.toml →  [claude]  api_key = \"sk-ant-...\""
                 )
                 return None, self._conn_error
 
