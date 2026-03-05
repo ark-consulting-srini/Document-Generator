@@ -1,0 +1,28 @@
+command:
+  - streamlit
+  - run
+  - streamlit_app.py
+  - --server.port=8501
+  - --server.headless=true
+  - --server.address=0.0.0.0
+
+# ── Environment variables ────────────────────────────────────────────────────
+# Databricks Apps auto-injects DATABRICKS_HOST and DATABRICKS_TOKEN — no config
+# needed for the Databricks LLM provider.
+#
+# For the Anthropic Claude provider, store your API key in a Databricks Secret
+# Scope and reference it here so TDG can use it without secrets.toml:
+#
+#   1. Create a secret scope (once):
+#        databricks secrets create-scope tdg-secrets
+#
+#   2. Store the key:
+#        databricks secrets put-secret tdg-secrets anthropic_api_key
+#
+#   3. Uncomment the block below (replace <scope> with your scope name):
+#
+# env:
+#   - name: ANTHROPIC_API_KEY
+#     valueFrom:
+#       secretScope: tdg-secrets
+#       secretKey: anthropic_api_key
